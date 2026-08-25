@@ -25,6 +25,19 @@
 
 ---
 
+## 📸 Screenshots
+
+### 🏠 Analyzer — Single Text Mode
+![Analyzer Home](docs/01_home.png)
+
+### 📊 Live Dashboard — Charts, Stats & Results
+![Live Dashboard](docs/02_dashboard.png)
+
+### 🕘 Saved Analysis Report (`/history/<id>`)
+![Saved Analysis Report](docs/03_history_report.png)
+
+---
+
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
@@ -74,6 +87,10 @@ analyzer/
 ├── config.py            # Env-driven configuration (Mongo URI, model name, limits)
 ├── requirements.txt     # Python dependencies
 ├── sample_reviews.csv   # Demo dataset — try the CSV upload with this!
+├── docs/                # Screenshots (used in this README)
+│   ├── 01_home.png
+│   ├── 02_dashboard.png
+│   └── 03_history_report.png
 ├── templates/
 │   ├── base.html        # Layout shell (navbar, footer)
 │   ├── index.html       # Analyzer form + live dashboard + history list
