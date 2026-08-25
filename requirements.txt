@@ -1,0 +1,7 @@
+flask==3.0.3
+transformers==4.44.2
+torch==2.4.0
+pymongo==4.8.0
+pandas==2.2.2
+werkzeug==3.0.3
+numpy<2

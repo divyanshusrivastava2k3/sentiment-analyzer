@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block hero %}
+<section class="hero">
+  <div class="hero-glow"></div>
+  <span class="hero-badge"><span class="pulse"></span> Powered by a fine-tuned RoBERTa transformer</span>
+  <h1>Know what people <span class="grad">really feel</span> about your product.</h1>
+  <p class="hero-sub">
+    Paste a review, a tweet, or upload thousands from a CSV — the AI classifies every
+    line as positive, negative or neutral, and turns it into a live visual report.
+  </p>
+  <div class="hero-actions">
+    <a href="#analyzer" class="btn btn-hero">Start analyzing ↓</a>
+    {% if history %}<a href="#history-section" class="btn btn-ghost">View past reports</a>{% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<!-- ------------------------------------------------------- how it works -->
+<section class="section">
+  <div class="container">
+    <div class="features">
+      <div class="feature card">
+        <span class="f-icon">✍️</span>
+        <h3>Single text</h3>
+        <p>Type any sentence and get an instant sentiment verdict with a confidence score.</p>
+      </div>
+      <div class="feature card">
+        <span class="f-icon">📋</span>
+        <h3>Bulk reviews</h3>
+        <p>Paste up to 500 reviews — one per line — and analyze them in one shot.</p>
+      </div>
+      <div class="feature card">
+        <span class="f-icon">📁</span>
+        <h3>CSV upload</h3>
+        <p>Upload a spreadsheet of up to 1,000 rows and pick which column holds the text.</p>
+      </div>
+      <div class="feature card">
+        <span class="f-icon">📊</span>
+        <h3>Visual reports</h3>
+        <p>Doughnut &amp; bar charts, stat tiles and a per-review table. Every run is saved.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------------------------------------------------------- analyzer -->
+<section class="section" id="analyzer" style="padding-top:0">
+  <div class="container">
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="single">Single Text</button>
+        <button class="tab" data-tab="bulk">Bulk Reviews</button>
+        <button class="tab" data-tab="csv">CSV Upload</button>
+      </div>
+
+      <!-- Single -->
+      <div id="tab-single" class="tab-panel">
+        <textarea id="single-text" rows="4"
+          placeholder="e.g. The battery life is amazing but the camera is a bit disappointing…"></textarea>
+        <div class="row">
+          <button id="btn-single" class="btn btn-primary">Analyze Sentiment</button>
+          <span id="status-single" class="status"></span>
+        </div>
+      </div>
+
+      <!-- Bulk -->
+      <div id="tab-bulk" class="tab-panel hidden">
+        <p class="hint">One review per line · max 500 lines.</p>
+        <textarea id="bulk-texts" rows="8"
+          placeholder="Absolutely loved it, worth every penny!&#10;Terrible quality, stopped working in two days.&#10;It's okay, does the job."></textarea>
+        <div class="row">
+          <button id="btn-bulk" class="btn btn-primary">Analyze Batch</button>
+          <span id="status-bulk" class="status"></span>
+        </div>
+      </div>
+
+      <!-- CSV -->
+      <div id="tab-csv" class="tab-panel hidden">
+        <p class="hint">Upload a CSV and pick the text column · max 1,000 rows · try
+          <b>sample_reviews.csv</b> from the project folder.</p>
+        <input type="file" id="csv-file" accept=".csv" />
+        <input type="text" id="csv-column" placeholder="Column name (optional — first column used by default)" />
+        <div class="row">
+          <button id="btn-csv" class="btn btn-primary">Analyze CSV</button>
+          <span id="status-csv" class="status"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- --------------------------------------------------------- dashboard -->
+<section class="section hidden" id="dashboard-section" style="padding-top:0">
+  <div class="container">
+    <div class="section-head" id="dashboard">
+      <p class="kicker">Results</p>
+      <h2 class="h2">Your dashboard</h2>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat"><span class="stat-num" id="st-total">0</span><span class="stat-label">Total analyzed</span></div>
+      <div class="stat positive"><span class="stat-num" id="st-pos">0</span><span class="stat-label">Positive</span></div>
+      <div class="stat neutral"><span class="stat-num" id="st-neu">0</span><span class="stat-label">Neutral</span></div>
+      <div class="stat negative"><span class="stat-num" id="st-neg">0</span><span class="stat-label">Negative</span></div>
+      <div class="stat"><span class="stat-num" id="st-conf">–</span><span class="stat-label">Avg confidence</span></div>
+    </div>
+
+    <div class="charts">
+      <div class="chart-card"><canvas id="pieChart"></canvas></div>
+      <div class="chart-card"><canvas id="barChart"></canvas></div>
+    </div>
+
+    <div class="table-card">
+      <table id="results-table">
+        <thead><tr><th>#</th><th>Text</th><th>Sentiment</th><th>Confidence</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ----------------------------------------------------------- history -->
+<section class="section" id="history-section" style="padding-top:0">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">Saved to {{ 'MongoDB' if mongo_ok else 'local store (MongoDB offline)' }}</p>
+      <h2 class="h2">Recent analyses</h2>
+    </div>
+
+    {% if history %}
+    <div class="table-card">
+      <table>
+        <thead><tr><th>Date</th><th>Source</th><th>Total</th><th>Positive</th><th>Neutral</th><th>Negative</th><th></th></tr></thead>
+        <tbody>
+          {% for h in history %}
+          <tr>
+            <td class="td-num">{{ h.created_at[:16].replace('T', ' ') }}</td>
+            <td>{{ h.source }}</td>
+            <td>{{ h.summary.total }}</td>
+            <td class="td-num">{{ h.summary.positive }}</td>
+            <td class="td-num">{{ h.summary.neutral }}</td>
+            <td class="td-num">{{ h.summary.negative }}</td>
+            <td><a class="link-arrow" href="/history/{{ h._id }}">View report <span>→</span></a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="card"><p style="color:var(--ox-muted)">No analyses yet — run one above and it will appear here automatically.</p></div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- --------------------------------------------------------------- cta -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="cta-band">
+      <h2 class="h2" style="color:#fff">Ready to read your customers' minds?</h2>
+      <p class="section-sub" style="color:var(--ox-muted-dark);margin:12px auto 30px">
+        Scroll back up, paste a review, and watch the AI work.
+      </p>
+      <a href="#analyzer" class="btn btn-hero">Analyze now</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+{% endblock %}

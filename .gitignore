@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+uploads/
+data/
+.venv/
+venv/
+.gstack/
+.claude/
